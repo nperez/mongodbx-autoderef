@@ -20,12 +20,16 @@ $doc2->{source} = { '$db' => $db_name, '$ref' => 'bar', '$id' => $id1 };
 my $id2 = $col->insert($doc2);
 $doc3->{source} = { '$db' => $db_name, '$ref' => 'bar', '$id' => $id2 };
 my $id3 = $col->insert($doc3);
+$doc1->{source} = { '$db' => $db_name, '$ref' => 'bar', '$id' => $id3 };
+$col->update({ _id => $id1}, $doc1);
 
 my $fetch = $col->find_one({_id => $id3});
 
 is($fetch->{baz}, 'foo', 'doc3 element matches');
 is($fetch->{source}->{bar}, 'baz', 'doc2 element matches');
 is($fetch->{source}->{source}->{foo}, 'bar', 'doc1 element matches');
+is($fetch->{source}->{source}->{source}->{baz}, 'foo',
+    'loop through the circular structure');
 
 $db->drop();
 done_testing();
