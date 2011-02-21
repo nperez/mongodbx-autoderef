@@ -13,12 +13,43 @@ use Scalar::Defer;
 use MongoDBx::AutoDeref::Types(':all');
 use Perl6::Junction('any');
 
+=attribute_public mongo_connection
+
+    is: ro, isa: MongoDB::Connection, required: 1
+
+In order to defer fetching the referenced document, a connection object needs to
+be accessible. This is required for construction of the object.
+
+=cut
+
 has mongo_connection =>
 (
     is => 'ro',
     isa => 'MongoDB::Connection',
     required => 1,
 );
+
+=attribute_public visitor
+
+    is: ro, isa: Data::Visitor::Callback
+    lazy: 1, builder => _build_visitor
+    handles: sieve => visit
+
+In order to find the DBRefs within the returned document, Data::Visitor is used
+to traverse the structure. This attribute is built using the provided builder
+with the default L</hash_visit_action> setup to build the lazy look up.
+
+=cut
+
+=method_public sieve
+
+    (HashRef)
+
+This method takes the returned document from MongoDB and traverses it to replace
+DBRefs with defered lookups of the actual document. It does this IN PLACE on the
+document.
+
+=cut
 
 has visitor =>
 (
@@ -28,6 +59,19 @@ has visitor =>
     builder => '_build_visitor',
     handles => { 'sieve' => 'visit' },
 );
+
+=attribute_public hash_visit_action
+
+    is: ro, isa: CodeRef
+    builder: _build_hash_visit_action
+    lazy: 1
+
+This attribute holds the code reference that will be executed upon each hash
+found within the data structure returned from MongoDB. By default, the coderef
+built using the builder method uses L<Scalar::Defer/lazy> to defer lookup of the
+referenced document until access time. 
+
+=cut
 
 has hash_visit_action =>
 (
@@ -85,3 +129,8 @@ sub _build_visitor
 
 1;
 __END__
+
+=head1 DESCRIPTION
+
+This module provides the guts for L<MongoDBx::AutoDeref>. It modifies documents
+in place to replace DBRefs with defered lookups of the actual document. 
