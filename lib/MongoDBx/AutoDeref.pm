@@ -78,7 +78,7 @@ __END__
 
 Using Mongo drivers from other languages and miss driver support for expanding
 DBRefs? Then this module is for you. Simple 'use' it to have this ability added
-to the core MongoSB driver.
+to the core MongoDB driver.
 
 Please read more about DBRefs:
 http://www.mongodb.org/display/DOCS/Database+References
