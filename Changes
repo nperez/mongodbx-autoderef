@@ -1,6 +1,7 @@
 Revision history for {{ $dist->name }}: {{ $dist->version }}
 
 {{ $NEXT }}
+        Enable partial document returns on DBRef->fetch()
 
 1.110530  2011-02-22 10:07:34 America/Chicago
         Using Scalar::Defer was a bad idea and so that functionality is now

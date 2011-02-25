@@ -103,15 +103,20 @@ sub revert
 
 =method_public fetch
 
+    (HashRef?)
+
 fetch takes the information contained in the L</$db>, L</$ref>, L</$id>
 attributes and applies them via the L</mongo_connection> to retrieve the
 document that is referenced.
+
+fetch also accepts a hashref of fields-as-keys that will be passed unaltered
+directly to the MongoDB driver as a way to limit the fields pulled back.
 
 =cut
 
 sub fetch
 {
-    my ($self) = @_;
+    my ($self, $fields) = @_;
     my %hash = %{$self->revert()};
     my @dbs = $self->mongo_connection->database_names();
     die "Database '$hash{'$db'}' doesn't exist"
@@ -126,9 +131,16 @@ sub fetch
     my $collection = $db->get_collection($hash{'$ref'});
 
     my $doc = $collection->find_one
-    ({
-        _id => $hash{'$id'}
-    }) or die "Unable to find document with _id: '$hash{'$id'}'";
+    (
+        {
+            _id => $hash{'$id'}
+        },
+        (
+            defined($fields)
+                ? $fields
+                : ()
+        )
+    ) or die "Unable to find document with _id: '$hash{'$id'}'";
 
     $self->lookmeup->sieve($doc);
     return $doc;
